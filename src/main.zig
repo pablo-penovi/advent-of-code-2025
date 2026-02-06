@@ -1,10 +1,10 @@
 const std = @import("std");
-const aoc2026 = @import("aoc2026");
+const aoc2025 = @import("aoc2025");
 
 pub fn main() !void {
     // Prints to stderr, ignoring potential errors.
     std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-    try aoc2026.bufferedPrint();
+    try aoc2025.bufferedPrint();
 }
 
 test "simple test" {
