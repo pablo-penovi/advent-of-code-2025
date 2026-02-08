@@ -53,8 +53,11 @@ This skill defines the standard Git workflow for agents working on this project.
    ```
 
 4. **Create Pull Request**
+   ```bash
+   gh pr create --title "feature/{feature-name}" --body "Comprehensive description of changes"
+   ```
    - Use branch name as PR title
-   - Write comprehensive description
+   - Write comprehensive description including summary, key changes, and testing performed
    - Request review if needed
 
 ### For Bug Fixes
@@ -62,7 +65,10 @@ This skill defines the standard Git workflow for agents working on this project.
 2. **Fix the issue**
 3. **Test the fix**
 4. **Commit and push**
-5. **Create PR** with explanation of the bug and fix
+5. **Create PR** with explanation of the bug and fix:
+   ```bash
+   gh pr create --title "fix/{bug-name}" --body "Explanation of bug and fix"
+   ```
 
 ## Commit Message Guidelines
 
