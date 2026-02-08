@@ -158,7 +158,15 @@ UI components should:
 
 ### Referenced Skills
 - `skills/ui/SKILL.md` - Comprehensive Vaxis TUI widget patterns
-- Contains detailed examples and best practices for UI development
+- `skills/git/SKILL.md` - Git workflow for version control
+- **AI AGENTS MUST ONLY USE THESE TWO SKILLS** - No other skills should be used by AI agents
+
+### AI Agent Restrictions
+**CRITICAL**: AI agents working on UI tasks MUST use ONLY:
+1. `skills/ui/SKILL.md` for all UI-related work
+2. `skills/git/SKILL.md` for all version control operations
+
+AI agents MUST NOT use any other skills or attempt to handle application logic tasks.
 
 ### Key UI Documentation
 - Widget implementation patterns

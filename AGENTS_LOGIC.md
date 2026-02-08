@@ -163,6 +163,14 @@ pub fn processData(allocator: std.mem.Allocator, input: []const u8) !ProcessedDa
 - `skills/git/SKILL.md` - Git workflow for version control
 - Future logic-specific skills may be added in `skills/logic/`
 
+### AI Agent Restrictions
+**CRITICAL**: AI agents working on application logic tasks MUST use ONLY:
+1. `skills/git/SKILL.md` for all version control operations
+2. AI agents should NOT use UI skills for application logic work
+3. AI agents should NOT attempt to handle UI-related tasks
+
+AI agents MUST refer to UI agents for any UI-related work and maintain strict separation of concerns.
+
 ### Key Logic Documentation
 - Function interface specifications
 - Data structure definitions

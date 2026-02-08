@@ -11,6 +11,18 @@ This file contains important information for agents working on the Advent of Cod
 
 **No agent should handle both UI and application logic in the same task.** Use separate agents for these two aspects and ensure proper coordination between them.
 
+## AI Agent Skill Restrictions
+
+**CRITICAL**: AI agents MUST use ONLY the following skills:
+- **`skills/ui/SKILL.md`** - For all UI-related work (UI agents only)
+- **``skills/git/SKILL.md`** - For all version control operations (all agents)
+
+AI agents MUST NOT:
+- Use any other skills beyond ui and git
+- Handle both UI and application logic in the same task
+- Create or use additional skills without explicit approval
+- Attempt to work outside their designated domain
+
 ## Project Overview
 
 This is a Zig-based TUI (Terminal User Interface) application for Advent of Code 2025 challenges. The project uses the Vaxis TUI framework to create an interactive day selector interface.
