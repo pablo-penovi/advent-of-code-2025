@@ -106,14 +106,6 @@ Update Vaxis dependency to latest version
 - Test the feature thoroughly
 - Review your own changes first
 
-## Integration with Project Workflow
-
-This Git skill complements the project's existing development workflow:
-
-- **AGENTS.md**: Provides project-specific information
-- **Git Skill**: Provides standardized Git workflow rules
-- **Build System**: Uses standard Zig commands (`zig build test`, `zig build run`)
-
 ## Enforcement
 
 These rules are mandatory for all agents working on the project. Following them ensures:
