@@ -2,42 +2,72 @@ const std = @import("std");
 const vaxis = @import("vaxis");
 const vxfw = vaxis.vxfw;
 
-/// Our main application state
-const Model = struct {
-    /// State of the counter
-    count: u32 = 0,
-    /// The button. This widget is stateful and must live between frames
-    button: vxfw.Button,
+/// Our day selector application state
+const DaySelector = struct {
+    /// The list view showing days 1-25
+    list_view: vxfw.ListView,
+    /// Selected day (0-24, corresponding to days 1-25)
+    selected_day: u8 = 0,
+    /// Whether we should exit
+    should_exit: bool = false,
+
+    pub fn init(allocator: std.mem.Allocator) !*DaySelector {
+        const self = try allocator.create(DaySelector);
+
+        // Create day widgets (1-25)
+        var day_widgets = try allocator.alloc(vxfw.Widget, 25);
+        for (1..26) |day| {
+            const day_text = try std.fmt.allocPrint(allocator, "Day {d}", .{day});
+            const text_widget: vxfw.Text = .{ .text = day_text };
+            day_widgets[day - 1] = text_widget.widget();
+        }
+
+        self.* = .{
+            .list_view = .{
+                .children = .{ .slice = day_widgets },
+                .draw_cursor = true,
+                .wheel_scroll = 3,
+            },
+            .selected_day = 0,
+            .should_exit = false,
+        };
+
+        return self;
+    }
 
     /// Helper function to return a vxfw.Widget struct
-    pub fn widget(self: *Model) vxfw.Widget {
+    pub fn widget(self: *DaySelector) vxfw.Widget {
         return .{
             .userdata = self,
-            .eventHandler = Model.typeErasedEventHandler,
-            .drawFn = Model.typeErasedDrawFn,
+            .eventHandler = typeErasedEventHandler,
+            .drawFn = typeErasedDrawFn,
         };
     }
 
     /// This function will be called from the vxfw runtime.
     fn typeErasedEventHandler(ptr: *anyopaque, ctx: *vxfw.EventContext, event: vxfw.Event) anyerror!void {
-        const self: *Model = @ptrCast(@alignCast(ptr));
+        const self: *DaySelector = @ptrCast(@alignCast(ptr));
         switch (event) {
-            // The root widget is always sent an init event as the first event. Users of the
-            // library can also send this event to other widgets they create if they need to do
-            // some initialization.
-            .init => return ctx.requestFocus(self.button.widget()),
+            // The root widget is always sent an init event as the first event
+            .init => return ctx.requestFocus(self.list_view.widget()),
             .key_press => |key| {
-                if (key.matches('c', .{ .ctrl = true })) {
+                if (key.matches('c', .{ .ctrl = true }) or key.matches('q', .{})) {
                     ctx.quit = true;
                     return;
                 }
+                if (key.matches(vaxis.Key.enter, .{})) {
+                    self.selected_day = @intCast(self.list_view.cursor);
+                    self.should_exit = true;
+                    // TODO: Output selected day - for now just exit
+                    ctx.quit = true;
+                    return ctx.consumeAndRedraw();
+                }
+                return self.list_view.handleEvent(ctx, event);
             },
             // We can request a specific widget gets focus. In this case, we always want to focus
-            // our button. Having focus means that key events will be sent up the widget tree to
-            // the focused widget, and then bubble back down the tree to the root. Users can tell
-            // the runtime the event was handled and the capture or bubble phase will stop
-            .focus_in => return ctx.requestFocus(self.button.widget()),
-            else => {},
+            // our list view
+            .focus_in => return ctx.requestFocus(self.list_view.widget()),
+            else => return self.list_view.handleEvent(ctx, event),
         }
     }
 
@@ -46,7 +76,7 @@ const Model = struct {
     /// explicitly requiring setting the redraw flag, vxfw can prevent excessive redraws for events
     /// which don't change state (ie mouse motion, unhandled key events, etc)
     fn typeErasedDrawFn(ptr: *anyopaque, ctx: vxfw.DrawContext) std.mem.Allocator.Error!vxfw.Surface {
-        const self: *Model = @ptrCast(@alignCast(ptr));
+        const self: *DaySelector = @ptrCast(@alignCast(ptr));
         // The DrawContext is inspired from Flutter. Each widget will receive a minimum and maximum
         // constraint. The minimum constraint will always be set, even if it is set to 0x0. The
         // maximum constraint can have null width and/or height - meaning there is no constraint in
@@ -55,42 +85,37 @@ const Model = struct {
         // the root widget - the maximum size will always be the size of the terminal screen.
         const max_size = ctx.max.size();
 
-        // The DrawContext also contains an arena allocator that can be used for each frame. The
-        // lifetime of this allocation is until the next time we draw a frame. This is useful for
-        // temporary allocations such as the one below: we have an integer we want to print as text.
-        // We can safely allocate this with the ctx arena since we only need it for this frame.
-        const count_text = try std.fmt.allocPrint(ctx.arena, "{d}", .{self.count});
-        const text: vxfw.Text = .{ .text = count_text };
+        // Create title text
+        const title: vxfw.Text = .{ .text = "Select Advent of Code Day:", .style = .{ .bold = true } };
 
         // Each widget returns a Surface from its draw function. A Surface contains the rectangular
         // area of the widget, as well as some information about the surface or widget: can we focus
         // it? does it handle the mouse?
         //
         // It DOES NOT contain the location it should be within its parent. Only the parent can set
-        // this via a SubSurface. Here, we will return a Surface for the root widget (Model), which
-        // has two SubSurfaces: one for the text and one for the button. A SubSurface is a Surface
+        // this via a SubSurface. Here, we will return a Surface for the root widget (DaySelector), which
+        // has two SubSurfaces: one for the title and one for the list view. A SubSurface is a Surface
         // with an offset and a z-index - the offset can be negative. This lets a parent draw a
         // child and place it within itself
-        const text_child: vxfw.SubSurface = .{
+        const title_child: vxfw.SubSurface = .{
             .origin = .{ .row = 0, .col = 0 },
-            .surface = try text.draw(ctx),
+            .surface = try title.draw(ctx),
         };
 
-        const button_child: vxfw.SubSurface = .{
-            .origin = .{ .row = 2, .col = 0 },
-            .surface = try self.button.draw(ctx.withConstraints(
+        const list_child: vxfw.SubSurface = .{
+            .origin = .{ .row = 2, .col = 2 },
+            .surface = try self.list_view.draw(ctx.withConstraints(
                 ctx.min,
-                // Here we explicitly set a new maximum size constraint for the Button. A Button will
-                // expand to fill its area and must have some hard limit in the maximum constraint
-                .{ .width = 16, .height = 3 },
+                // Give the list view most of the available space
+                .{ .width = max_size.width - 4, .height = max_size.height - 4 },
             )),
         };
 
         // We also can use our arena to allocate the slice for our SubSurfaces. This slice only
         // needs to live until the next frame, making this safe.
         const children = try ctx.arena.alloc(vxfw.SubSurface, 2);
-        children[0] = text_child;
-        children[1] = button_child;
+        children[0] = title_child;
+        children[1] = list_child;
 
         return .{
             // A Surface must have a size. Our root widget is the size of the screen
@@ -103,76 +128,44 @@ const Model = struct {
             .children = children,
         };
     }
-
-    /// The onClick callback for our button. This is also called if we press enter while the button
-    /// has focus
-    fn onClick(maybe_ptr: ?*anyopaque, ctx: *vxfw.EventContext) anyerror!void {
-        const ptr = maybe_ptr orelse return;
-        const self: *Model = @ptrCast(@alignCast(ptr));
-        self.count +|= 1;
-        return ctx.consumeAndRedraw();
-    }
 };
-
-pub const EntryType = enum {
-    file,
-    directory,
-    other,
-};
-
-pub const DirectoryEntry = struct {
-    name: []const u8,
-    entry_type: EntryType,
-};
-
-/// Reads the contents (files, directories, symlinks) of a given path.
-/// Returns an allocator-owned slice of `DirectoryEntry`.
-pub fn readDirectory(allocator: std.mem.Allocator, path: []const u8) ![]DirectoryEntry {
-    // Open the directory
-    var dir = try std.fs.cwd().openDir(path, .{});
-    defer dir.close();
-
-    var entries = std.ArrayList(DirectoryEntry).init(allocator);
-    errdefer entries.deinit();
-
-    // Iterate over all entries
-    var it = dir.iterate();
-    while (try it.next()) |entry| {
-        const entry_type: EntryType = switch (entry.kind) {
-            .file => .file,
-            .directory => .directory,
-            else => .other,
-        };
-
-        if (entry_type == .other) {
-            continue;
-        }
-
-        try entries.append(.{
-            .name = try allocator.dupe(u8, entry.name),
-            .entry_type = entry_type,
-        });
-    }
-
-    return entries.toOwnedSlice();
-}
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
     const allocator = std.heap.page_allocator;
 
-    // You can use relative or absolute paths:
-    const path = ".";  // current directory
-
-    const entries = try readDirectory(allocator, path);
-    defer allocator.free(entries);
-
-    for (entries) |entry| {
-        const type_str = switch (entry.entry_type) {
-            .file => "File",
-            .directory => "Dir",
-            .symlink => "Symlink",
-        };
-        try stdout.print("{s} - {s}\n", .{ type_str, entry.name });
+    // Try TUI version first, fallback to console if TTY not available
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer {
+        const deinit_status = gpa.deinit();
+        if (deinit_status == .leak) {
+            std.log.err("memory leak", .{});
+        }
     }
+    const gpa_allocator = gpa.allocator();
+
+    var app = vxfw.App.init(gpa_allocator) catch |err| switch (err) {
+        error.Unexpected => {
+            // Fallback to console if TTY not available
+            return runConsoleFallback(allocator);
+        },
+        else => return err,
+    };
+    defer app.deinit();
+
+    // Create the day selector
+    var day_selector = try DaySelector.init(gpa_allocator);
+    defer gpa_allocator.destroy(day_selector);
+
+    // Main event loop
+    try app.run(day_selector.widget(), .{});
+}
+
+fn runConsoleFallback(_: std.mem.Allocator) !void {
+    // Simple console fallback
+    std.debug.print("Select Advent of Code Day:\n", .{});
+    for (1..26) |day| {
+        std.debug.print("  {}\n", .{day});
+    }
+    std.debug.print("\n(TTY not available - using console fallback)\n", .{});
+    std.debug.print("In a real terminal, you would see an interactive TUI day selector.\n", .{});
 }
