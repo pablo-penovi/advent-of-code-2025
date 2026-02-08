@@ -84,8 +84,11 @@ const DaySelector = struct {
                 if (key.matches(vaxis.Key.enter, .{})) {
                     self.selected_day = @intCast(self.list_view.cursor);
                     self.should_exit = true;
-                    const stderr_file = std.fs.File.stderr;
-                    try stderr_file.print("Selected: Day {d}\n", .{self.selected_day + 1});
+                    var stdout_buffer: [1024]u8 = undefined;
+                    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+                    const stdout = &stdout_writer.interface;
+                    try stdout.print("Selected: Day {d}\n", .{self.selected_day + 1});
+                    try stdout.flush();
                     ctx.quit = true;
                     return ctx.consumeAndRedraw();
                 }
@@ -190,20 +193,4 @@ pub fn main() !void {
 
     // Main event loop
     try app.run(day_selector.widget(), .{});
-}
-
-fn runConsoleFallback(allocator: std.mem.Allocator) !void {
-    // Simple console fallback
-    std.debug.print("Select Advent of Code Day:\n", .{});
-    for (1..26) |day| {
-        std.debug.print("  {}\n", .{day});
-    }
-    std.debug.print("\n(TTY not available - using console fallback)\n", .{});
-    std.debug.print("In a real terminal, you would see an interactive TUI day selector.\n", .{});
-
-    // Create a simple DaySelector just to test it doesn't leak
-    var day_selector = try DaySelector.init(allocator);
-    defer day_selector.deinit();
-
-    std.debug.print("Day selector created and cleaned up successfully!\n", .{});
 }
