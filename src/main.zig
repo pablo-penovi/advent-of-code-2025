@@ -2,67 +2,30 @@ const std = @import("std");
 const vaxis = @import("vaxis");
 const vxfw = vaxis.vxfw;
 
-/// Our day selector application state
-const DaySelector = struct {
-    /// The list view showing days 1-25
-    list_view: vxfw.ListView,
-    /// Selected day (0-24, corresponding to days 1-25)
-    selected_day: u8 = 0,
+/// Our simple text display application state
+const TextDisplay = struct {
     /// Whether we should exit
     should_exit: bool = false,
     /// Allocator for cleanup
     allocator: std.mem.Allocator,
-    /// Day text allocations for cleanup
-    day_texts: [][]const u8,
 
-    pub fn init(allocator: std.mem.Allocator) !*DaySelector {
-        const self = try allocator.create(DaySelector);
+    pub fn init(allocator: std.mem.Allocator) !*TextDisplay {
+        const self = try allocator.create(TextDisplay);
         self.* = .{
-            .list_view = undefined,
-            .selected_day = 0,
             .should_exit = false,
             .allocator = allocator,
-            .day_texts = undefined,
         };
-
-        // Create day widgets (1-25)
-        var day_widgets = try allocator.alloc(vxfw.Widget, 25);
-        var day_texts = try allocator.alloc([]const u8, 25);
-        for (1..26) |day| {
-            const day_text = try std.fmt.allocPrint(allocator, "Day {d}", .{day});
-            const text_widget: vxfw.Text = .{ .text = day_text };
-            day_widgets[day - 1] = text_widget.widget();
-            day_texts[day - 1] = day_text;
-        }
-
-        self.list_view = .{
-            .children = .{ .slice = day_widgets },
-            .draw_cursor = true,
-            .wheel_scroll = 3,
-        };
-        self.day_texts = day_texts;
 
         return self;
     }
 
-    pub fn deinit(self: *DaySelector) void {
-        // Free the day text strings
-        for (self.day_texts) |day_text| {
-            self.allocator.free(day_text);
-        }
-        self.allocator.free(self.day_texts);
-
-        // Free the day widgets array
-        if (self.list_view.children == .slice) {
-            self.allocator.free(self.list_view.children.slice);
-        }
-
-        // Free the DaySelector itself
+    pub fn deinit(self: *TextDisplay) void {
+        // Free the TextDisplay itself
         self.allocator.destroy(self);
     }
 
     /// Helper function to return a vxfw.Widget struct
-    pub fn widget(self: *DaySelector) vxfw.Widget {
+    pub fn widget(self: *TextDisplay) vxfw.Widget {
         return .{
             .userdata = self,
             .eventHandler = typeErasedEventHandler,
@@ -72,32 +35,17 @@ const DaySelector = struct {
 
     /// This function will be called from the vxfw runtime.
     fn typeErasedEventHandler(ptr: *anyopaque, ctx: *vxfw.EventContext, event: vxfw.Event) anyerror!void {
-        const self: *DaySelector = @ptrCast(@alignCast(ptr));
+        _ = ptr; // unused
         switch (event) {
             // The root widget is always sent an init event as the first event
-            .init => return ctx.requestFocus(self.list_view.widget()),
+            .init => return,
             .key_press => |key| {
                 if (key.matches('c', .{ .ctrl = true }) or key.matches('q', .{})) {
                     ctx.quit = true;
                     return;
                 }
-                if (key.matches(vaxis.Key.enter, .{})) {
-                    self.selected_day = @intCast(self.list_view.cursor);
-                    self.should_exit = true;
-                    var stdout_buffer: [1024]u8 = undefined;
-                    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
-                    const stdout = &stdout_writer.interface;
-                    try stdout.print("Selected: Day {d}\n", .{self.selected_day + 1});
-                    try stdout.flush();
-                    ctx.quit = true;
-                    return ctx.consumeAndRedraw();
-                }
-                return self.list_view.handleEvent(ctx, event);
             },
-            // We can request a specific widget gets focus. In this case, we always want to focus
-            // our list view
-            .focus_in => return ctx.requestFocus(self.list_view.widget()),
-            else => return self.list_view.handleEvent(ctx, event),
+            else => return,
         }
     }
 
@@ -106,13 +54,13 @@ const DaySelector = struct {
     /// explicitly requiring setting the redraw flag, vxfw can prevent excessive redraws for events
     /// which don't change state (ie mouse motion, unhandled key events, etc)
     fn typeErasedDrawFn(ptr: *anyopaque, ctx: vxfw.DrawContext) std.mem.Allocator.Error!vxfw.Surface {
-        const self: *DaySelector = @ptrCast(@alignCast(ptr));
+        const self: *TextDisplay = @ptrCast(@alignCast(ptr));
         // The DrawContext is inspired from Flutter. Each widget will receive a minimum and maximum
         // constraint. The minimum constraint will always be set, even if it is set to 0x0. The
         // maximum constraint can have null width and/or height - meaning there is no constraint in
-        // that direction and the widget should take up as much space as it needs. By calling size()
-        // on the max, we assert that it has some constrained size. This is *always* the case for
-        // the root widget - the maximum size will always be the size of the terminal screen.
+        // that direction and the widget should take up as much space as it needs. By
+        // explicitly requiring setting the redraw flag, vxfw can prevent excessive redraws for events
+        // which don't change state (ie mouse motion, unhandled key events, etc)
         const max_size = ctx.max.size();
 
         // Create title text
@@ -125,13 +73,16 @@ const DaySelector = struct {
         }
         const divider: vxfw.Text = .{ .text = divider_text };
 
+        // Create "Hello world!" text content
+        const hello_text: vxfw.Text = .{ .text = "Hello world!" };
+
         // Each widget returns a Surface from its draw function. A Surface contains the rectangular
         // area of the widget, as well as some information about the surface or widget: can we focus
         // it? does it handle the mouse?
         //
         // It DOES NOT contain the location it should be within its parent. Only the parent can set
-        // this via a SubSurface. Here, we will return a Surface for the root widget (DaySelector), which
-        // has three SubSurfaces: title, divider, and list view. A SubSurface is a Surface
+        // this via a SubSurface. Here, we will return a Surface for the root widget (TextDisplay), which
+        // has three SubSurfaces: title, divider, and hello text. A SubSurface is a Surface
         // with an offset and a z-index - the offset can be negative. This lets a parent draw a
         // child and place it within itself
         const title_child: vxfw.SubSurface = .{
@@ -144,13 +95,9 @@ const DaySelector = struct {
             .surface = try divider.draw(ctx),
         };
 
-        const list_child: vxfw.SubSurface = .{
-            .origin = .{ .row = 3, .col = 2 },
-            .surface = try self.list_view.draw(ctx.withConstraints(
-                ctx.min,
-                // Give the list view appropriate space
-                .{ .width = max_size.width - 4, .height = max_size.height - 5 },
-            )),
+        const hello_child: vxfw.SubSurface = .{
+            .origin = .{ .row = 3, .col = @divTrunc(max_size.width - 12, 2) },
+            .surface = try hello_text.draw(ctx),
         };
 
         // We also can use our arena to allocate the slice for our SubSurfaces. This slice only
@@ -158,7 +105,7 @@ const DaySelector = struct {
         const children = try ctx.arena.alloc(vxfw.SubSurface, 3);
         children[0] = title_child;
         children[1] = divider_child;
-        children[2] = list_child;
+        children[2] = hello_child;
 
         return .{
             // A Surface must have a size. Our root widget is the size of the screen
@@ -187,10 +134,10 @@ pub fn main() !void {
     var app = try vxfw.App.init(allocator);
     defer app.deinit();
 
-    // Create the day selector
-    var day_selector = try DaySelector.init(allocator);
-    defer day_selector.deinit();
+    // Create the text display
+    var text_display = try TextDisplay.init(allocator);
+    defer text_display.deinit();
 
     // Main event loop
-    try app.run(day_selector.widget(), .{});
+    try app.run(text_display.widget(), .{});
 }
