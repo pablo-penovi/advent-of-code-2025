@@ -84,7 +84,8 @@ const DaySelector = struct {
                 if (key.matches(vaxis.Key.enter, .{})) {
                     self.selected_day = @intCast(self.list_view.cursor);
                     self.should_exit = true;
-                    // TODO: Output selected day - for now just exit
+                    const stderr_file = std.fs.File.stderr;
+                    try stderr_file.print("Selected: Day {d}\n", .{self.selected_day + 1});
                     ctx.quit = true;
                     return ctx.consumeAndRedraw();
                 }
@@ -112,7 +113,14 @@ const DaySelector = struct {
         const max_size = ctx.max.size();
 
         // Create title text
-        const title: vxfw.Text = .{ .text = "Select Advent of Code Day:", .style = .{ .bold = true } };
+        const title: vxfw.Text = .{ .text = "Advent of Code 2025", .style = .{ .bold = true } };
+
+        // Create horizontal line divider
+        const divider_text = try ctx.arena.alloc(u8, max_size.width);
+        for (divider_text) |*char| {
+            char.* = '-';
+        }
+        const divider: vxfw.Text = .{ .text = divider_text };
 
         // Each widget returns a Surface from its draw function. A Surface contains the rectangular
         // area of the widget, as well as some information about the surface or widget: can we focus
@@ -120,28 +128,34 @@ const DaySelector = struct {
         //
         // It DOES NOT contain the location it should be within its parent. Only the parent can set
         // this via a SubSurface. Here, we will return a Surface for the root widget (DaySelector), which
-        // has two SubSurfaces: one for the title and one for the list view. A SubSurface is a Surface
+        // has three SubSurfaces: title, divider, and list view. A SubSurface is a Surface
         // with an offset and a z-index - the offset can be negative. This lets a parent draw a
         // child and place it within itself
         const title_child: vxfw.SubSurface = .{
-            .origin = .{ .row = 0, .col = 0 },
+            .origin = .{ .row = 0, .col = @divTrunc(max_size.width - 20, 2) },
             .surface = try title.draw(ctx),
         };
 
+        const divider_child: vxfw.SubSurface = .{
+            .origin = .{ .row = 1, .col = 0 },
+            .surface = try divider.draw(ctx),
+        };
+
         const list_child: vxfw.SubSurface = .{
-            .origin = .{ .row = 2, .col = 2 },
+            .origin = .{ .row = 3, .col = 2 },
             .surface = try self.list_view.draw(ctx.withConstraints(
                 ctx.min,
-                // Give the list view most of the available space
-                .{ .width = max_size.width - 4, .height = max_size.height - 4 },
+                // Give the list view appropriate space
+                .{ .width = max_size.width - 4, .height = max_size.height - 5 },
             )),
         };
 
         // We also can use our arena to allocate the slice for our SubSurfaces. This slice only
         // needs to live until the next frame, making this safe.
-        const children = try ctx.arena.alloc(vxfw.SubSurface, 2);
+        const children = try ctx.arena.alloc(vxfw.SubSurface, 3);
         children[0] = title_child;
-        children[1] = list_child;
+        children[1] = divider_child;
+        children[2] = list_child;
 
         return .{
             // A Surface must have a size. Our root widget is the size of the screen
@@ -157,10 +171,25 @@ const DaySelector = struct {
 };
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer {
+        const deinit_status = gpa.deinit();
+        if (deinit_status == .leak) {
+            std.log.err("memory leak", .{});
+        }
+    }
+    const allocator = gpa.allocator();
 
-    // For now, just run console version since TTY isn't available in this environment
-    return runConsoleFallback(allocator);
+    // Initialize Vaxis TUI app
+    var app = try vxfw.App.init(allocator);
+    defer app.deinit();
+
+    // Create the day selector
+    var day_selector = try DaySelector.init(allocator);
+    defer day_selector.deinit();
+
+    // Main event loop
+    try app.run(day_selector.widget(), .{});
 }
 
 fn runConsoleFallback(allocator: std.mem.Allocator) !void {
