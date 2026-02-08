@@ -2,6 +2,15 @@
 
 This file contains important information for agents working on the Advent of Code 2025 Zig project.
 
+## Agent Specialization
+
+**CRITICAL**: This project uses specialized agents for different aspects of development. Agents MUST work exclusively in their domain:
+
+- **UI Tasks**: Use `AGENTS_UI.md` for all user interface work
+- **Application Logic Tasks**: Use `AGENTS_LOGIC.md` for all business logic work
+
+**No agent should handle both UI and application logic in the same task.** Use separate agents for these two aspects and ensure proper coordination between them.
+
 ## Project Overview
 
 This is a Zig-based TUI (Terminal User Interface) application for Advent of Code 2025 challenges. The project uses the Vaxis TUI framework to create an interactive day selector interface.
