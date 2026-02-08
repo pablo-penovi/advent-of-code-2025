@@ -15,13 +15,20 @@ This file contains important information for agents working on the Advent of Cod
 
 **CRITICAL**: AI agents MUST use ONLY the following skills:
 - **`skills/ui/SKILL.md`** - For all UI-related work (UI agents only)
-- **``skills/git/SKILL.md`** - For all version control operations (all agents)
+- **`skills/git/SKILL.md`** - For ALL version control operations and git workflow (all agents)
+
+**MANDATORY**: All agents MUST load and follow `skills/git/SKILL.md` for any git operations, including:
+- Branch creation and management
+- Commit and push procedures
+- Pull request creation and management
+- All other git workflow requirements
 
 AI agents MUST NOT:
 - Use any other skills beyond ui and git
 - Handle both UI and application logic in the same task
 - Create or use additional skills without explicit approval
 - Attempt to work outside their designated domain
+- Perform git operations without following `skills/git/SKILL.md`
 
 ## Project Overview
 
@@ -139,14 +146,9 @@ Dependencies are managed through `build.zig.zon`. To update dependencies:
 3. **Accountability**: Clear history of changes and their authors
 4. **Backup**: Work is safely stored in remote repository
 
-### Git Workflow
-1. **Before Starting**: Pull latest changes with `git pull`
-2. **During Work**: Make changes, test with `zig build test`
-3. **After Completion**: 
-   - Stage changes: `git add .`
-   - Commit with descriptive message: `git commit -m "Description of task completed"`
-   - Push to remote: `git push`
-4. **Verification**: Ensure changes appear in remote repository
+**All git operations MUST follow the workflow specified in `skills/git/SKILL.md`.**
+
+
 
 ### Commit Message Standards
 - Use clear, descriptive commit messages
@@ -157,10 +159,7 @@ Dependencies are managed through `build.zig.zon`. To update dependencies:
   - "Fix memory leak in DaySelector deinit"
   - "Implement keyboard navigation for list view"
 
-### Branch Management
-- Work directly on `main` branch for this project
-- If creating branches for complex features, ensure they are merged and pushed
-- Keep the remote repository up-to-date at all times
+
 
 ### Quality Assurance
 - **Testing**: Always run `zig build test` before committing
