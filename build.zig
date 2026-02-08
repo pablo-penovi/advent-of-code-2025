@@ -83,6 +83,19 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    // Day modules for Advent of Code challenges
+    const day01_part1 = b.createModule(.{
+        .root_source_file = b.path("src/days/01/part1.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const day01_part2 = b.createModule(.{
+        .root_source_file = b.path("src/days/01/part2.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     //Dependencies
     const vaxis = b.dependency("vaxis", .{
         .target = target,
@@ -90,6 +103,8 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.root_module.addImport("vaxis", vaxis.module("vaxis"));
+    exe.root_module.addImport("day01_part1", day01_part1);
+    exe.root_module.addImport("day01_part2", day01_part2);
 
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default

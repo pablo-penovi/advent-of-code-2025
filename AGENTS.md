@@ -69,6 +69,7 @@ This is a Zig-based TUI (Terminal User Interface) application for Advent of Code
 ### Entry Points
 - **Main Application**: `src/main.zig:main()` - TUI day selector interface
 - **Library Functions**: `src/root.zig` - Utility functions like `bufferedPrint()` and `add()`
+- **Day Solutions**: `src/days/{DAY}/part{X}.zig` - Individual AoC challenge solutions
 
 ## Build & Development Commands
 
@@ -181,8 +182,60 @@ Dependencies are managed through `build.zig.zon`. To update dependencies:
 - Memory safety is emphasized with proper cleanup
 - Event-driven architecture allows for responsive UI
 
-### Testing Strategy
+## Advent of Code Day Structure
+
+### Standardized Directory Layout
+All Advent of Code challenges follow this consistent structure:
+
+```
+src/days/{DAY_NUMBER}/
+├── part1.zig          # Solution for Part 1
+├── part2.zig          # Solution for Part 2  
+└── inputs/
+    ├── demo.txt       # Example input from AoC description
+    ├── challenge.txt  # Actual puzzle input
+    └── debug*.txt     # Additional test inputs for debugging
+```
+
+### Day Naming Conventions
+- **Day folders**: Two-digit format (01, 02, ..., 25)
+- **Solution files**: `part1.zig` and `part2.zig`
+- **Input files**: Standardized names for different input types
+
+### Build Integration
+- All new `.zig` files in day folders MUST be added to `build.zig`
+- Each part file should be available as a module to the main application
+- Module naming follows pattern: `day{NUMBER}_part{PART}`
+
+### Solution File Template
+Day solution files should:
+1. Export a `solve` function accepting `[]const u8` input
+2. Return `!usize` with the solution result
+3. Follow existing Zig error handling patterns
+4. Include appropriate imports from `std`
+
+Example template:
+```zig
+const std = @import("std");
+
+pub fn solve(input: []const u8) !usize {
+    // TODO: Implement Day X Part Y solution
+    _ = input; // Suppress unused parameter warning
+    return 0;
+}
+```
+
+### Agent Requirements for New Days
+When creating new day folders, agents MUST:
+1. Follow the exact directory structure shown above
+2. Create both `part1.zig` and `part2.zig` with proper function signatures
+3. Create the `inputs/` folder with at least `demo.txt` and `challenge.txt`
+4. Update `build.zig` to include the new modules following the naming pattern
+5. Test the build with `zig build test` before committing
+
+## Testing Strategy
 - Unit tests in library module (`src/root.zig`)
 - Integration tests for executable functionality
 - Manual testing of TUI interface recommended
 - Memory leak detection enabled in debug builds
+- Day solutions can be tested with various input files from the inputs/ folder

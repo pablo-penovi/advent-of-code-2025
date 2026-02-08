@@ -1,0 +1,3 @@
+# Debug input 1 for Day 1
+# Additional test case for debugging edge cases
+# Add specific test scenarios here
