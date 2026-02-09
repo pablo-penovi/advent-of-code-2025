@@ -7,15 +7,24 @@
 ```
 src/
 ├── days/           # Daily challenge solutions
-│   ├── day1.py     # Day 1 solution (parts 1 & 2)
-│   ├── day1.txt    # Day 1 inputs
+│   ├── day1/       # Day 1 folder
+│   │   ├── day1.py # Day 1 solution (parts 1 & 2)
+│   │   ├── demo.txt
+│   │   ├── input.txt
+│   │   └── debug1.txt
+│   ├── day2/       # Day 2 folder
+│   │   ├── day2.py
+│   │   ├── demo.txt
+│   │   ├── input.txt
+│   │   └── debug2.txt
 │   └── ...
 └── commons/        # Shared utilities
 ```
 
 ## Conventions
-- Daily files: `day{N}.py` in `src/days/`
-- Input files: `demo.txt`, `input.txt`, `debug{N}.txt`
+- Daily files: `day{N}.py` in `src/days/day{N}/`
+- Input files: `demo.txt`, `input.txt`, `debug{N}.txt` in `src/days/day{N}/`
+- Each day folder contains both the solution file and all input files
 - Each day file contains both part 1 and part 2 logic
 - Shared logic goes in `src/commons/`
 
