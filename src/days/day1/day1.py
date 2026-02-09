@@ -83,18 +83,14 @@ def solve_part2(input_lines: list[str]) -> int:
 def main():
     """Main function to run the solution."""
     import sys
-    
+    from src.commons.file_parser import parse_input_file
+
     if len(sys.argv) != 2:
         print("Usage: python day1.py <input_file>")
         sys.exit(1)
     
     filename = sys.argv[1]
-    try:
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found")
-        sys.exit(1)
+    lines = parse_input_file(filename)
     
     part1_result = solve_part1(lines)
     part2_result = solve_part2(lines)

@@ -1,0 +1,1 @@
+"""Common utilities for Advent of Code 2025 solutions."""
