@@ -39,6 +39,38 @@ def is_invalid_id(num_str: str) -> bool:
     return num_str[:mid] == num_str[mid:]
 
 
+def is_invalid_id_part2(num_str: str) -> bool:
+    """
+    Check if number string consists of some sequence of digits repeated at least twice.
+    
+    Args:
+        num_str: Number as string
+        
+    Returns:
+        True if the number is invalid (repeated pattern), False otherwise
+    """
+    n = len(num_str)
+    
+    # Try all possible pattern lengths from 1 to n//2
+    for pattern_len in range(1, n // 2 + 1):
+        # Pattern length must divide total length evenly
+        if n % pattern_len != 0:
+            continue
+        
+        pattern = num_str[:pattern_len]
+        repetitions = n // pattern_len
+        
+        # Need at least 2 repetitions
+        if repetitions < 2:
+            continue
+        
+        # Check if repeating the pattern recreates the original string
+        if pattern * repetitions == num_str:
+            return True
+    
+    return False
+
+
 def solve_part1(input_lines: list[str]) -> int:
     """
     Solve Part 1 of Day 2: Find and sum all invalid IDs in ranges.
@@ -75,16 +107,36 @@ def solve_part1(input_lines: list[str]) -> int:
 
 def solve_part2(input_lines: list[str]) -> int:
     """
-    Placeholder for Part 2 solution.
+    Solve Part 2 of Day 2: Find and sum all invalid IDs with repeated patterns.
     
     Args:
-        input_lines: List containing input data
+        input_lines: List containing a single line with comma-separated ranges
         
     Returns:
-        Part 2 result (placeholder)
+        Sum of all invalid IDs found in the given ranges using new rules
     """
-    # Part 2 implementation will go here
-    return 0
+    if not input_lines:
+        return 0
+    
+    # Parse ranges from the first line
+    input_line = input_lines[0].strip()
+    ranges = parse_ranges(input_line)
+    
+    total_sum = 0
+    
+    for start_str, end_str in ranges:
+        # Convert to integers only for range iteration
+        start_num = int(start_str)
+        end_num = int(end_str)
+        
+        # Iterate through each number in the range
+        for num in range(start_num, end_num + 1):
+            # Convert back to string for validation
+            num_str = str(num)
+            if is_invalid_id_part2(num_str):
+                total_sum += num
+    
+    return total_sum
 
 
 def main():
