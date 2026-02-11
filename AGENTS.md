@@ -84,7 +84,7 @@ def parse_rotation(line: str) -> tuple[str, int]:
 ### Execution Conventions
 - **MANDATORY**: All solutions and tests must be executed as modules from project root
 - **Solution execution**: `python -m src.days.day1.day1 src/days/day1/demo.txt`
-- **Test execution**: `pytest src/days/day1/test_day1.py`
+- **Test execution**: `python -m pytest src/days/day1/test_day1.py`
 - Never run scripts directly from within day directories (will cause ModuleNotFoundError)
 - Always execute from project root directory to maintain proper module path resolution
 
