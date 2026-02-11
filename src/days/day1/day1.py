@@ -83,7 +83,7 @@ def solve_part2(input_lines: list[str]) -> int:
 def main():
     """Main function to run the solution."""
     import sys
-    from ..commons.file_parser import parse_input_file
+    from src.commons.file_parser import parse_input_file
 
     if len(sys.argv) != 2:
         print("Usage: python day1.py <input_file>")

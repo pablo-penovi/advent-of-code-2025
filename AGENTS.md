@@ -5,11 +5,11 @@
 
 ## Python Modules
 - **MANDATORY**: Python modules must be employed at all times
-- **MANDATORY**: All importing between application files will be done using relative imports
+- **MANDATORY**: All importing between application files will be done using absolute imports from project root
 - Examples:
-  - Import from commons: `from ..commons.file_parser import parse_input_file`
-  - Import from other days: `from ..day1.day1 import solve_part1`
-  - Import within same day: `from .day1 import solve_part1`
+  - Import from commons: `from src.commons.file_parser import parse_input_file`
+  - Import from other days: `from src.days.day1.day1 import solve_part1`
+  - Import within same day: `from src.days.day1.day1 import solve_part1`
 
 ## Project Structure
 ```
