@@ -1,5 +1,7 @@
 # Advent of Code 2025 - Python Project
 
+**CRITICAL**: Follow this conventions and rules at all times
+
 ## Requirements
 - Python 3.14.2+
 
@@ -26,9 +28,6 @@ src/
 │   └── ...
 └── commons/        # Shared utilities
 ```
-
-## Coding Practices
-- **MANDATORY**: All coding practices must be followed consistently across the project
 
 ### Import Conventions
 - **MANDATORY**: All importing between application files uses absolute imports from project root
@@ -142,9 +141,6 @@ def test_part1():
     result = solve_part1(lines)
     assert result == expected_value
 ```
-
-## Conventions
-- High-level architectural patterns and project organization principles
 
 ## Git Workflow
 - **MANDATORY**: Git workflow should be included in ANY PLAN MADE
