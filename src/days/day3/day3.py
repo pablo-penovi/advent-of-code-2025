@@ -1,4 +1,8 @@
-from src.commons.file_parser import parse_input_file
+"""Day 3 Advent of Code 2025 solution.
+
+This module contains solutions for calculating battery joltage totals
+using greedy selection algorithms for maximum value extraction.
+"""
 
 
 def find_max_joltage(line: str) -> int:
@@ -10,7 +14,16 @@ def find_max_joltage(line: str) -> int:
         
     Returns:
         Maximum 2-digit number that can be formed
+        
+    Raises:
+        ValueError: If line is empty or contains no digits
     """
+    line = line.strip()
+    if not line:
+        raise ValueError("Empty line provided")
+    if not line.isdigit():
+        raise ValueError("Line contains non-digit characters")
+    
     # Step 1: Find left-most largest digit
     max_digit = '0'
     max_pos = -1
@@ -74,7 +87,16 @@ def find_max_12_digit_joltage(line: str) -> int:
         
     Returns:
         Maximum 12-digit number that can be formed (or 0 if line too short)
+        
+    Raises:
+        ValueError: If line is empty or contains no digits
     """
+    line = line.strip()
+    if not line:
+        raise ValueError("Empty line provided")
+    if not line.isdigit():
+        raise ValueError("Line contains non-digit characters")
+    
     if len(line) < 12:
         return 0
     
@@ -123,5 +145,23 @@ def solve_part2(input_lines: list[str]) -> int:
 
 
 def main():
-    """Main function for running Day 3 solutions."""
-    pass
+    """Main function to run the solution."""
+    import sys
+    from src.commons.file_parser import parse_input_file
+
+    if len(sys.argv) != 2:
+        print("Usage: python day3.py <input_file>")
+        sys.exit(1)
+    
+    filename = sys.argv[1]
+    lines = parse_input_file(filename)
+    
+    part1_result = solve_part1(lines)
+    part2_result = solve_part2(lines)
+    
+    print(f"Part 1: {part1_result}")
+    print(f"Part 2: {part2_result}")
+
+
+if __name__ == "__main__":
+    main()
