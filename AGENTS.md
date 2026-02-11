@@ -5,6 +5,7 @@
 
 ## Python Modules
 - **MANDATORY**: Python modules must be employed at all times
+- **MANDATORY**: All solutions and tests must be executed as modules from project root
 
 ## Project Structure
 ```
@@ -80,6 +81,13 @@ def parse_rotation(line: str) -> tuple[str, int]:
 - Early returns for invalid conditions
 - Variable naming includes type suffixes where helpful (e.g., `num_str` for string numbers)
 
+### Execution Conventions
+- **MANDATORY**: All solutions and tests must be executed as modules from project root
+- **Solution execution**: `python -m src.days.day1.day1 src/days/day1/demo.txt`
+- **Test execution**: `pytest src/days/day1/test_day1.py`
+- Never run scripts directly from within day directories (will cause ModuleNotFoundError)
+- Always execute from project root directory to maintain proper module path resolution
+
 ### Code Organization Patterns
 - Helper functions with single responsibility principle
 - Main function structure:
@@ -96,7 +104,7 @@ def main():
     from src.commons.file_parser import parse_input_file
 
     if len(sys.argv) != 2:
-        print("Usage: python day1.py <input_file>")
+        print("Usage: python -m src.days.day1.day1 <input_file>")
         sys.exit(1)
     
     filename = sys.argv[1]
@@ -124,6 +132,7 @@ if __name__ == "__main__":
   - `test_part1()`: Test part 1 result with demo input
   - `test_part2()`: Test part 2 result with demo input
 - No additional tests beyond these two requirements
+- Tests must be executed from project root using pytest
 - Test structure:
 ```python
 def test_part1():
