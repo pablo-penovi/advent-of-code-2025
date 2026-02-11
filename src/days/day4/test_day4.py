@@ -17,4 +17,4 @@ def test_part2():
     from src.commons.file_parser import parse_input_file
     lines = parse_input_file('src/days/day4/demo.txt')
     result = solve_part2(lines)
-    assert result == 0
+    assert result == 43
