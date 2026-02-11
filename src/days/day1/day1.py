@@ -2,12 +2,20 @@ def parse_rotation(line: str) -> tuple[str, int]:
     """
     Parse a rotation instruction like 'L68' or 'R48'.
     
+    Args:
+        line: String containing rotation instruction
+        
     Returns:
         tuple: (direction, distance) where direction is 'L' or 'R'
+        
+    Raises:
+        ValueError: If line format is invalid or empty
     """
     line = line.strip()
     if not line:
         raise ValueError("Empty rotation line")
+    if len(line) < 2:
+        raise ValueError(f"Invalid rotation instruction format: {line}")
     
     direction = line[0].upper()
     if direction not in ('L', 'R'):

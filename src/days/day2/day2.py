@@ -80,6 +80,9 @@ def solve_part1(input_lines: list[str]) -> int:
         
     Returns:
         Sum of all invalid IDs found in the given ranges
+        
+    Raises:
+        ValueError: If input format is invalid or contains non-numeric data
     """
     if not input_lines:
         return 0
@@ -114,6 +117,9 @@ def solve_part2(input_lines: list[str]) -> int:
         
     Returns:
         Sum of all invalid IDs found in the given ranges using new rules
+        
+    Raises:
+        ValueError: If input format is invalid or contains non-numeric data
     """
     if not input_lines:
         return 0
