@@ -11,4 +11,4 @@ def test_part1():
 def test_part2():
     lines = parse_input_file('src/days/day3/demo.txt')
     result = solve_part2(lines)
-    # assert result == expected_value  # To be filled when puzzle available
+    assert result == 3121910778619
