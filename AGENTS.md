@@ -11,6 +11,15 @@
   - Import from other days: `from ..day1.day1 import solve_part1`
   - Import within same day: `from .day1 import solve_part1`
 
+## Python Execution
+- **MANDATORY**: All Python execution must be done using module syntax due to relative imports
+- **MANDATORY**: Execute from project root directory (`/home/pablo/proyectos/python/aoc2025/`)
+- **Correct execution examples**:
+  - Run day 1: `python -m src.days.day1.day1 src/days/day1/input.txt`
+  - Run day 2: `python -m src.days.day2.day2 src/days/day2/input.txt`
+- **Testing execution**: `python -m pytest src/days/day1/test_day1.py -v`
+- **Incorrect execution**: `python src/days/day1/day1.py` (will fail due to relative imports)
+
 ## Project Structure
 ```
 src/
