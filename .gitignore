@@ -1,2 +1,9 @@
 # Scripts
 venv.sh
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
