@@ -63,17 +63,96 @@ def solve_part1(input_lines: list[str]) -> int:
     return accessible_count
 
 
+def count_adjacent_rolls_with_edges(grid: list[list[str]], row: int, col: int) -> int:
+    """
+    Count the number of paper rolls in adjacent positions within grid bounds.
+    
+    Edge positions outside the grid are treated as empty and not counted.
+    
+    Args:
+        grid: 2D grid representation where '@' is a paper roll
+        row: Row index of the position to check
+        col: Column index of the position to check
+        
+    Returns:
+        Number of '@' symbols in adjacent positions within grid bounds
+    """
+    adjacent_count = 0
+    
+    # 8 directional offsets: (row_offset, col_offset)
+    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), 
+                  (0, 1), (1, -1), (1, 0), (1, 1)]
+    
+    for row_offset, col_offset in directions:
+        new_row = row + row_offset
+        new_col = col + col_offset
+        
+        # Only count positions within grid bounds
+        if 0 <= new_row < len(grid) and 0 <= new_col < len(grid[0]):
+            if grid[new_row][new_col] == '@':
+                adjacent_count += 1
+    
+    return adjacent_count
+
+
+def find_accessible_rolls(grid: list[list[str]]) -> list[tuple[int, int]]:
+    """
+    Find all currently accessible rolls (fewer than 4 adjacent rolls).
+    
+    Args:
+        grid: 2D grid representation where '@' is a paper roll
+        
+    Returns:
+        List of (row, col) tuples for accessible rolls
+    """
+    accessible_rolls = []
+    
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col] == '@':
+                adjacent_count = count_adjacent_rolls_with_edges(grid, row, col)
+                if adjacent_count < 4:
+                    accessible_rolls.append((row, col))
+    
+    return accessible_rolls
+
+
 def solve_part2(input_lines: list[str]) -> int:
     """
-    Solve Part 2 of Day 4: Placeholder for future implementation.
+    Solve Part 2 of Day 4: Count total removable rolls through iterative removal.
+    
+    Rolls are repeatedly removed if they have fewer than 4 adjacent rolls,
+    counting edge positions as empty. Process continues until no more rolls
+    are accessible.
     
     Args:
         input_lines: List of strings representing the grid
         
     Returns:
-        Placeholder value (0 for now)
+        Total number of rolls that can be removed
     """
-    return 0
+    if not input_lines:
+        return 0
+    
+    # Convert to mutable grid
+    grid = [list(line) for line in input_lines]
+    total_removed = 0
+    
+    while True:
+        # Find all currently accessible rolls
+        accessible_rolls = find_accessible_rolls(grid)
+        
+        # No more accessible rolls, stop
+        if not accessible_rolls:
+            break
+        
+        # Remove all accessible rolls
+        for row, col in accessible_rolls:
+            grid[row][col] = '.'
+        
+        total_removed += len(accessible_rolls)
+    
+    return total_removed
 
 
 def main():
