@@ -57,12 +57,3 @@ src/
 5. **PR creation**: Create GitHub PR with description when feature is complete
 
 **Available tools**: `git` and `gh` commands
-
-## Git Exclusions
-- **MANDATORY**: Cache folders and compiled files must never be committed
-- **MANDATORY**: Ensure `.gitignore` excludes the following patterns:
-  - `__pycache__/` - Python bytecode cache directories
-  - `*.pyc` - Compiled Python files
-  - `*.pyo` - Optimized Python files
-  - `.pytest_cache/` - Pytest cache directories
-  - `*.egg-info/` - Python package metadata
